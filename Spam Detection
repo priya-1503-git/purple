@@ -1,0 +1,46 @@
+# 1. Import libraries
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+
+# 2. Load dataset
+# You can use the public "spam.csv" dataset
+# Download from: https://www.kaggle.com/datasets/uciml/sms-spam-collection-dataset
+data = df.copy() # Use the existing df DataFrame
+# data.columns = ['label', 'message'] # No need to rename columns as they are already correct
+
+# 3. Convert labels (ham = 0, spam = 1)
+data['label'] = data['label'].map({'ham': 0, 'spam': 1})
+
+# Handle missing values in the 'message' column
+data['message'] = data['message'].fillna('')
+
+
+# 4. Split data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(
+    data['message'], data['label'], test_size=0.2, random_state=42
+)
+
+# 5. Convert text to numerical features
+vectorizer = CountVectorizer(stop_words='english')
+X_train_vec = vectorizer.fit_transform(X_train)
+X_test_vec = vectorizer.transform(X_test)
+
+# 6. Train a simple model
+model = MultinomialNB()
+model.fit(X_train_vec, y_train)
+
+# 7. Make predictions
+y_pred = model.predict(X_test_vec)
+
+# 8. Evaluate the model
+print("Accuracy:", accuracy_score(y_test, y_pred))
+print("\nConfusion Matrix:\n", confusion_matrix(y_test, y_pred))
+print("\nClassification Report:\n", classification_report(y_test, y_pred))
+
+# 9. Try a custom message
+sample = ["Congratulations! You’ve won a free gift card. Click to claim now!"]
+sample_vec = vectorizer.transform(sample)
+print("\nPrediction:", "Spam" if model.predict(sample_vec)[0] == 1 else "Ham")
